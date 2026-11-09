@@ -354,7 +354,8 @@
     </div>
 
     <!-- Hidden audio elements for WebRTC stream and TTS playback -->
-    <audio id="remoteAudio" autoplay playsinline></audio>
+    <!-- remoteAudio is muted: raw WebRTC voice is in original language; translated TTS plays via ttsAudio -->
+    <audio id="remoteAudio" autoplay playsinline muted></audio>
     <audio id="ttsAudio" playsinline preload="auto"></audio>
 
     <script>

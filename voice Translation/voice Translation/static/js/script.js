@@ -580,6 +580,15 @@ function startPolling() {
         user_id: currentUserId,
       });
 
+      // Handle session-not-found (server restarted or session expired)
+      if (!data.ok && (data.message === 'Session not found' || data.message === 'User not found in session')) {
+        console.warn('Session expired on server. Please rejoin.');
+        stopPolling();
+        isCallActive = false;
+        updateCallStatus('⚠️ Session expired — please refresh and rejoin the room.');
+        return;
+      }
+
       const updatedUsers = data.user_list || [];
       handleUserListUpdate(updatedUsers);
 
@@ -592,6 +601,7 @@ function startPolling() {
       if (data.messages && data.messages.length > 0) {
         data.messages.forEach((msg) => {
           const rendered = renderSubtitle(msg);
+          // Only speak translated TTS for messages from OTHER users
           if (rendered && !isSpeakerMuted && msg.sender_id !== currentUserId) {
             speakText(msg.text, msg.language);
           }
@@ -785,15 +795,21 @@ function renderSubtitle(data) {
   const item = document.createElement('div');
   item.className = 'subtitle-item';
 
-  const showOriginal = data.original_text && data.original_text.trim() !== data.text.trim();
+  // Show original text if the message was translated (text differs from original)
+  const isTranslated = data.original_text && data.original_text.trim() !== data.text.trim();
+  // Show "→ translated to [lang]" badge for received messages
+  const isOwnMessage = data.sender_id === currentUserId;
+  const translationBadge = (!isOwnMessage && isTranslated)
+    ? `<span style="font-size:0.68rem; color:#38bdf8; margin-left:6px; font-weight:500;">🌐 translated</span>`
+    : (isOwnMessage ? `<span style="font-size:0.68rem; color:#94a3b8; margin-left:6px;">you</span>` : '');
 
   item.innerHTML = `
     <div class="subtitle-speaker">
-      <span>${data.sender_name}</span>
+      <span>${data.sender_name}${translationBadge}</span>
       <span style="font-weight:400; font-size:0.75rem; color:#94a3b8;">${timeStr}</span>
     </div>
     <div class="subtitle-text">${data.text}</div>
-    ${showOriginal ? `<div class="subtitle-original"><i class="fas fa-quote-left"></i> ${data.original_text}</div>` : ''}
+    ${isTranslated ? `<div class="subtitle-original"><i class="fas fa-quote-left"></i> ${data.original_text}</div>` : ''}
   `;
 
   subtitlesList.appendChild(item);
@@ -1307,8 +1323,11 @@ if (toggleMicBtn) {
 function handleToggleSpeaker() {
   isSpeakerMuted = !isSpeakerMuted;
 
-  if (remoteAudioEl) {
-    remoteAudioEl.muted = isSpeakerMuted;
+  // Mute/unmute the TTS audio element (translated speech output)
+  // Note: remoteAudioEl (raw WebRTC stream) stays muted — receiver hears only translated TTS
+  if (ttsAudioEl) {
+    ttsAudioEl.muted = isSpeakerMuted;
+    if (isSpeakerMuted) ttsAudioEl.pause();
   }
 
   if (isSpeakerMuted) {
