@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>VoxTranslate AI • Real-Time Voice Translation & Live Subtitles</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body data-lan-address="{{ lan_ip or '' }}">
+    <!-- Background Glow Aura -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="app-wrapper">
+        <!-- Top Navigation Bar -->
+        <header class="navbar">
+            <div class="nav-left">
+                <a href="#welcome" class="brand" id="brandHomeLink">
+                    <div class="brand-icon">
+                        <i class="fas fa-wave-square"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="title">VoxTranslate <span class="highlight">AI</span></span>
+                        <span class="badge"><i class="fas fa-bolt"></i> Real-Time</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- In-Call Header Info (Visible during active call) -->
+            <div id="callHeaderInfo" class="call-header-info hidden">
+                <div class="call-status">
+                    <span class="live-dot"></span>
+                    <span id="callStatusText">Connecting...</span>
+                </div>
+                <div class="call-timer-pill" id="callTimer">00:00</div>
+                <div class="room-pill">
+                    <i class="fas fa-door-open"></i> <span id="sessionDisplay"></span>
+                </div>
+                <button type="button" id="shareQrBtn" class="nav-action-btn" title="Show QR Code for Mobile">
+                    <i class="fas fa-qrcode"></i> <span class="btn-text-responsive">QR Code</span>
+                </button>
+                <button type="button" id="shareInviteBtn" class="call-invite-button">
+                    <i class="fas fa-link"></i> <span class="btn-text-responsive">Copy link</span>
+                </button>
+            </div>
+
+            <!-- Welcome Navigation Links (Visible when not in call) -->
+            <nav class="nav-links" id="mainNavLinks">
+                <a href="#welcome" class="nav-link active" data-tab="welcome"><i class="fas fa-home"></i> Home</a>
+                <a href="#features" class="nav-link" data-tab="features"><i class="fas fa-sparkles"></i> Features</a>
+                <a href="#test-audio" class="nav-link" data-tab="test-audio"><i class="fas fa-microphone-lines"></i> Test Mic</a>
+                <a href="#mobile-guide" class="nav-link" data-tab="mobile-guide"><i class="fas fa-mobile-screen"></i> Mobile / HTTPS</a>
+            </nav>
+        </header>
+
+        <main class="main-container">
+            <!-- VIEW 1: WELCOME / LANDING PAGE -->
+            <div id="joinPanel" class="welcome-section">
+                <!-- Hero Section -->
+                <div class="hero-container">
+                    <div class="hero-badge">
+                        <span class="badge-icon"><i class="fas fa-language"></i></span>
+                        <span>Next-Gen Speech-to-Speech AI Translation</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Speak In Your Language.<br />
+                        <span class="gradient-text">They Hear & Read In Theirs.</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Instant, bidirectional voice translation with WebRTC peer-to-peer audio, studio-grade neural voice synthesis, and real-time synchronized closed captions across desktop and mobile.
+                    </p>
+
+                    <!-- Feature Pills -->
+                    <div class="tech-pills">
+                        <div class="pill"><i class="fas fa-microphone"></i> Live Speech AI</div>
+                        <div class="pill"><i class="fas fa-volume-high"></i> Natural Neural Voice</div>
+                        <div class="pill"><i class="fas fa-closed-captioning"></i> Dual Captions</div>
+                        <div class="pill"><i class="fas fa-globe"></i> 50+ Languages</div>
+                    </div>
+                </div>
+
+                <!-- Call Setup Card -->
+                <div class="join-card-wrapper">
+                    <div class="join-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <h2><i class="fas fa-phone-volume"></i> Start or Join a Call</h2>
+                                <p>Enter a room code or generate one to share with your partner.</p>
+                            </div>
+                        </div>
+
+                        <form id="join-form">
+                            <div class="form-group">
+                                <label for="session_id"><i class="fas fa-key"></i> Room Code / ID</label>
+                                <div class="input-with-button">
+                                    <input type="text" id="session_id" placeholder="e.g. room-4589" required autocomplete="off" />
+                                    <button type="button" id="randomRoomBtn" class="btn-ghost" title="Generate random room code">
+                                        <i class="fas fa-random"></i> Random
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="user_name"><i class="fas fa-user"></i> Your Name</label>
+                                    <input type="text" id="user_name" placeholder="Enter your display name" value="Guest" required />
+                                </div>
+
+                                <div class="form-group half">
+                                    <label for="user_language"><i class="fas fa-language"></i> Your Spoken Language</label>
+                                    <select id="user_language" class="custom-select">
+                                        {% for lang in languages %}
+                                        <option value="{{ lang[0] }}" {% if lang[0] == 'en' %}selected{% endif %}>{{ lang[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary-call">
+                                <i class="fas fa-phone-alt"></i> Join Voice Room Now
+                            </button>
+                        </form>
+
+                        <div class="network-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Private & Peer-to-Peer. No sign-up or installation required.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Highlights Grid -->
+                <section id="featuresSection" class="features-grid">
+                    <div class="feature-card">
+                        <div class="f-icon blue"><i class="fas fa-bolt"></i></div>
+                        <h3>Instant Voice-to-Voice</h3>
+                        <p>Speak naturally in Telugu, Hindi, Spanish, or Japanese. The listener immediately hears crisp audio spoken in their chosen tongue.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="f-icon purple"><i class="fas fa-closed-captioning"></i></div>
+                        <h3>Dual Synchronized CC</h3>
+                        <p>Live closed captions display the translated sentence in bold, alongside the original transcript with timestamps and search.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="f-icon emerald"><i class="fas fa-mobile-screen-button"></i></div>
+                        <h3>Mobile & Laptop Ready</h3>
+                        <p>Fully responsive UI designed for smartphones and laptops. Share links or scan QR codes to join in one tap.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="f-icon cyan"><i class="fas fa-file-export"></i></div>
+                        <h3>Transcript Export</h3>
+                        <p>Never lose a note. Download your entire bilingual meeting transcript with one click in formatted text.</p>
+                    </div>
+                </section>
+
+                <!-- In-Page Microphone Diagnostic Tool -->
+                <section id="audioTestSection" class="info-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-microphone-lines"></i> Microphone & Audio Diagnostic Tool</h2>
+                        <p>Test your microphone before joining a room to ensure permissions are working.</p>
+                    </div>
+
+                    <div class="audio-tester-card">
+                        <div class="tester-status">
+                            <div class="status-indicator" id="testMicIndicator">
+                                <i class="fas fa-microphone-slash"></i>
+                            </div>
+                            <div class="status-text-group">
+                                <h4 id="testMicStatusTitle">Microphone Ready to Test</h4>
+                                <p id="testMicStatusDesc">Click "Test Microphone" to verify input levels and audio permission.</p>
+                            </div>
+                        </div>
+
+                        <div class="level-meter-wrapper">
+                            <div class="level-meter-bar">
+                                <div id="testLevelFill" class="level-fill"></div>
+                            </div>
+                            <span id="testLevelLabel" class="level-label">0%</span>
+                        </div>
+
+                        <div class="tester-actions">
+                            <button type="button" id="startMicTestBtn" class="btn-secondary">
+                                <i class="fas fa-play"></i> Start Microphone Test
+                            </button>
+                            <button type="button" id="testSpeakerBtn" class="btn-ghost">
+                                <i class="fas fa-volume-up"></i> Test Speaker Audio
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Mobile & HTTPS Help Section -->
+                <section id="mobileGuideSection" class="info-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shield-halved"></i> Mobile Permissions & HTTPS Guide</h2>
+                        <p>Why mobile browsers block microphones on HTTP and how to connect safely.</p>
+                    </div>
+
+                    <div class="guide-grid">
+                        <div class="guide-card">
+                            <div class="guide-num">1</div>
+                            <h4>Secure Context Requirement</h4>
+                            <p>Modern mobile browsers (Chrome on Android, Safari on iOS) prohibit microphone access on plain <code>http://</code> addresses for privacy. They require <code>https://</code> or <code>localhost</code>.</p>
+                        </div>
+                        <div class="guide-card">
+                            <div class="guide-num">2</div>
+                            <h4>Free Public HTTPS Tunnel</h4>
+                            <p>Run <code>start_public_https.bat</code> in the app folder to get a trusted <code>https://...trycloudflare.com</code> link that works with microphone permissions on any phone worldwide.</p>
+                        </div>
+                        <div class="guide-card">
+                            <div class="guide-num">3</div>
+                            <h4>One-Click Cloud Deploy</h4>
+                            <p>Deploy for free on Render, Railway, or Hugging Face. The project includes ready-to-run <code>render.yaml</code> and <code>Dockerfile</code> configurations.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW 2: ACTIVE CALL ROOM -->
+            <div id="callPanel" class="call-screen hidden">
+                <!-- Participants Grid -->
+                <div class="participants-container">
+                    <div id="participantsGrid" class="participants-grid">
+                        <!-- Dynamic Participant Cards inserted here -->
+                    </div>
+
+                    <!-- Fluid Audio Wave Visualizer Canvas -->
+                    <div class="visualizer-container">
+                        <canvas id="audioVisualizerCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Subtitles / Live Captions Overlay & Drawer -->
+                <div id="subtitlesOverlay" class="subtitles-overlay">
+                    <div class="subtitles-header">
+                        <div class="subtitles-title">
+                            <i class="fas fa-closed-captioning"></i>
+                            <span>Live Captions & AI Translation</span>
+                        </div>
+                        <div class="subtitles-actions">
+                            <input type="text" id="filterSubtitlesInput" placeholder="Filter captions..." class="subtitles-filter" />
+                            <button type="button" id="exportTranscriptBtn" class="btn-icon-xs" title="Download conversation transcript (.txt)">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button type="button" id="clearSubtitlesBtn" class="btn-icon-xs" title="Clear subtitles">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <button type="button" id="minimizeSubtitlesBtn" class="btn-icon-xs" title="Minimize / Expand Subtitles">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="subtitlesList" class="subtitles-list">
+                        <div class="subtitle-placeholder">
+                            <i class="fas fa-headset fa-2x"></i>
+                            <p>Speak naturally in your microphone. Live translated speech will appear here in real-time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Microphone Permission Alert Banner -->
+                <div id="micPermissionBox" class="mic-alert hidden">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="micPermissionMessage">Microphone access was blocked. Tap "Grant Mic" to allow audio.</span>
+                    <button type="button" id="enableMicBtn" class="btn-sm"><i class="fas fa-microphone"></i> Grant Mic</button>
+                </div>
+
+                <!-- Floating Call Control Bar (Mobile-friendly thumb dock) -->
+                <div class="call-controls-container">
+                    <!-- Quick Text Translation Input Bar -->
+                    <div class="quick-input-bar">
+                        <input type="text" id="quick_text" placeholder="Type text to translate & speak out loud..." autocomplete="off" />
+                        <button type="button" id="sendQuickTextBtn" class="btn-send-quick" title="Send message to room">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <!-- Main Floating Action Dock -->
+                    <div class="call-controls-bar">
+                        <button type="button" id="pushToSpeakBtn" class="control-btn speak-btn" title="Push to Speak (Manual Audio Record)">
+                            <i class="fas fa-microphone"></i>
+                            <span class="btn-label">Speak</span>
+                        </button>
+                        <button type="button" id="toggleMic" class="control-btn mic-on" title="Mute / Unmute Microphone">
+                            <i class="fas fa-microphone-slash"></i>
+                            <span class="btn-label">Mic</span>
+                        </button>
+                        <button type="button" id="toggleSpeaker" class="control-btn speaker-on" title="Mute / Unmute AI Speaker Audio">
+                            <i class="fas fa-volume-up"></i>
+                            <span class="btn-label">Audio</span>
+                        </button>
+                        <button type="button" id="toggleSubtitles" class="control-btn subtitles-on" title="Toggle Live Captions Overlay">
+                            <i class="fas fa-closed-captioning"></i>
+                            <span class="btn-label">Captions</span>
+                        </button>
+                        <button type="button" id="changeLanguageBtn" class="control-btn lang-btn" title="Change Language Mid-Call">
+                            <i class="fas fa-globe"></i>
+                            <span class="btn-label">Lang</span>
+                        </button>
+                        <button type="button" id="leaveCall" class="control-btn end-call" title="End Call">
+                            <i class="fas fa-phone-slash"></i>
+                            <span class="btn-label">Leave</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: QR Code Invite Modal for Mobile Devices -->
+    <div id="qrModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-qrcode"></i> Scan to Join Call</h3>
+                <button type="button" id="closeQrModalBtn" class="btn-icon-xs"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body text-center">
+                <p>Point your smartphone camera at this QR code to join this room instantly:</p>
+                <div class="qr-code-wrapper">
+                    <img id="qrCodeImg" alt="Room Invite QR Code" class="qr-code-img" />
+                </div>
+                <div class="invite-url-box">
+                    <input type="text" id="modalInviteUrlInput" readonly />
+                    <button type="button" id="modalCopyUrlBtn" class="btn-sm"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Mid-Call Language Switcher -->
+    <div id="langModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-globe"></i> Change Your Language</h3>
+                <button type="button" id="closeLangModalBtn" class="btn-icon-xs"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Select your new spoken & listening language for this call:</p>
+                <div class="form-group" style="margin-top: 14px;">
+                    <select id="modalLanguageSelect" class="custom-select">
+                        {% for lang in languages %}
+                        <option value="{{ lang[0] }}">{{ lang[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="button" id="confirmChangeLangBtn" class="btn-primary-call" style="margin-top: 14px;">
+                    <i class="fas fa-check"></i> Save & Switch Language
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio elements for WebRTC stream and TTS playback -->
+    <audio id="remoteAudio" autoplay playsinline></audio>
+    <audio id="ttsAudio" playsinline preload="auto"></audio>
+
+    <script>
+        window.VOICE_ICE_SERVERS = {{ rtc_ice_servers | tojson }};
+    </script>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

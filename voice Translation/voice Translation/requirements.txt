@@ -1,0 +1,10 @@
+Flask>=2.0
+deep-translator>=1.11.0
+edge-tts>=7.3.1
+flask-socketio>=5.3.0
+python-socketio>=5.10.0
+python-engineio>=4.8.0
+SpeechRecognition>=3.10.0
+pydub>=0.25.1
+requests>=2.28.0
+gunicorn>=21.0.0

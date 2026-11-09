@@ -1,0 +1,28 @@
+# Python virtual environment
+.venv/
+*/.venv/
+env/
+venv/
+ENV/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary audio files
+*.wav
+*.mp3
+*.ogg
+uploads/
+*/uploads/
+
+# Binaries & Logs
+cloudflared.exe
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
